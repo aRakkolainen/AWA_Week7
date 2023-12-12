@@ -17,8 +17,7 @@ app.use(express.json());
 app.use(session({
     secret: "AEK3412eEKMDOAMONEOENFONA#EMDF", 
     resave: false, 
-    saveUninitialized: false,
-    cookies: {} 
+    saveUninitialized: false
 }))
 app.use(passport.initialize());
 app.use(passport.session());
@@ -77,8 +76,9 @@ app.post("/api/user/login", async (req, res) => {
         let loginStatus = await authenticateUser(req.body.username, req.body.password);
         if (loginStatus == true) {
             //console.log(connect.sid)
-            //console.log(req.session.cookie)
-            res.status(200).cookie(req.session.cookie).send("Login succeeded!");
+            let cookie = req.session.cookie;
+            cookie.name = "connect.sid";
+            res.status(200).cookie(cookie).send("Login succeeded!");
         } else {
             res.status(401).send("Login failed!");
         }
