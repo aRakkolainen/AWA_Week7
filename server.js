@@ -11,13 +11,14 @@ const session = require('express-session');
 let users = []; 
 app.use(express.json());
 
-const initializePassport = require('./passport-config');
-initializePassport(passport, users)
+//const initializePassport = require('./passport-config');
+//initializePassport(passport, users)
 
 app.use(session({
     secret: "AEK3412eEKMDOAMONEOENFONA#EMDF", 
     resave: false, 
-    saveUninitialized: false
+    saveUninitialized: false,
+    cookies: {} 
 }))
 app.use(passport.initialize());
 app.use(passport.session());
@@ -75,7 +76,9 @@ app.post("/api/user/login", async (req, res) => {
     try {
         let loginStatus = await authenticateUser(req.body.username, req.body.password);
         if (loginStatus == true) {
-            res.status(200).send("Login succeeded!");
+            //console.log(connect.sid)
+            //console.log(req.session.cookie)
+            res.status(200).cookie(req.session.cookie).send("Login succeeded!");
         } else {
             res.status(401).send("Login failed!");
         }
