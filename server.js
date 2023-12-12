@@ -49,17 +49,21 @@ app.post("/api/user/register", checkNotAuthentication, async (req, res) => {
                 "password": hashedPassword
             }
             users.push(user);
-            res.send(user)
+            res.redirect("/")
         }
         
         } catch(error) {
             res.redirect("/api/user/register")
         }
 });
-/*app.get("/", checkNotAuthentication, (req, res) => {
+app.get("/", (req, res) => {
+    console.log("Registering succeeded")
+    res.send("Registering succeeded")
+})
+app.get("/api/user/login", checkNotAuthentication, (req, res) => {
     console.log(req.cookie);
     res.status(200).send("Login succeeded!");
-})*/
+})
 
 app.post("/api/user/login", checkNotAuthentication, passport.authenticate("local", {session: false}), function (req, res){
     if (req.session == false) {
@@ -91,20 +95,16 @@ app.get("/api/user/list", (req, res) =>{
     res.send(users)
 })
 
-app.get("/api/secret", (req, res) => {
-    if (req.isAuthenticated()) {
-        res.status(200).send("Token is valid");
-    } else {
-        res.status(401);
-    }
+app.get("/api/secret", checkAuthentication, (req, res) => {
+    console.log("This is secret page!");
 })
 
 // Checking if user is already logged in
 function checkAuthentication(req, res, next) {
     if (req.isAuthenticated()) {
-        return next();
+        res.redict("/secret")
     } 
-    return res.redirect("/api/user/login")
+    return res.redirect("user/login")
 }
 // Checking if user is not logged in
 function checkNotAuthentication(req, res, next) {
