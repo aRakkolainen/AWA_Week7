@@ -46,8 +46,8 @@ async function authenticateUser(username, password) {
 
 passport.use(new LocalStrategy(authenticateUser))
 
-app.post("/api/user/register", async (req, res) => {
-    //console.log(req.body);
+app.post("/api/user/register", checkNotAuthentication, async (req, res) => {
+    console.log("Registering...");
     try {
         let username = req.body.username;
         let password = req.body.password;
@@ -92,5 +92,27 @@ app.get("/api/user/list", (req, res) =>{
     res.send(users)
 })
 
+app.get("/api/secret", (req, res) => {
+    if (req.isAuthenticated()) {
+        res.status(200).send("Token is valid");
+    } else {
+        res.status(401);
+    }
+})
+
+// Checking if user is already logged in
+function checkAuthentication(req, res, next) {
+    if (req.isAuthenticated()) {
+        return next();
+    } 
+    return res.redirect("/api/user/login")
+}
+// Checking if user is not logged in
+function checkNotAuthentication(req, res, next) {
+    if (req.isAuthenticated()) {
+        return res.redirect("/");
+    }
+    return next();
+}
 
 app.listen(port, () => console.log("Server running at port ", port));
