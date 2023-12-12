@@ -49,7 +49,7 @@ app.post("/api/user/register", checkNotAuthentication, async (req, res) => {
                 "password": hashedPassword
             }
             users.push(user);
-            res.redirect("/")
+            res.send(user)
         }
         
         } catch(error) {
