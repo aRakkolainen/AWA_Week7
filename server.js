@@ -4,15 +4,15 @@ const path = require('path');
 const port = 3000;
 const passport = require('passport');
 const bcrypt = require('bcrypt');
-//const LocalStrategy = require('passport-local').Strategy;
+const LocalStrategy = require('passport-local').Strategy;
 
 const session = require('express-session');
 //const initializePassport = require('./passport.config')
 let users = []; 
 app.use(express.json());
 
-const initializePassport = require('./passport-config');
-initializePassport(passport, users)
+//const initializePassport = require('./passport-config');
+//initializePassport(passport, users)
 
 app.use(session({
     secret: "AEK3412eEKMDOAMONEOENFONA#EMDF", 
@@ -21,6 +21,30 @@ app.use(session({
 }))
 app.use(passport.initialize());
 app.use(passport.session());
+
+async function authenticateUser(username, password) {
+    
+    const user = users.find((user) => user.username === username);
+    if (user === null) {
+        console.log("User not found");
+        return false;
+    }
+
+    try {
+        if (await bcrypt.compare(password, user.password)) {
+            console.log("Login was successful for user " + user.username + "!");
+            return true
+        } else {
+            console.log("Incorrect password!");
+            return false;
+        }
+    } catch(e) {
+        return done(e);
+    }
+    
+} 
+
+passport.use(new LocalStrategy(authenticateUser))
 
 app.post("/api/user/register", async (req, res) => {
     //console.log(req.body);
@@ -49,8 +73,7 @@ app.post("/api/user/register", async (req, res) => {
 
 app.post("/api/user/login", async (req, res) => {
     try {
-        let loginStatus = await authenticateUser(req.body.username, req.body.password, done);
-        console.log(loginStatus);
+        let loginStatus = await authenticateUser(req.body.username, req.body.password);
         if (loginStatus == true) {
             res.status(200).send("Login succeeded!");
         } else {
