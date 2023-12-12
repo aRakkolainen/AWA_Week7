@@ -2,9 +2,25 @@ const express = require('express');
 const app = express(); 
 const path = require('path');
 const port = 3000;
-const bcrypt = require('bcrypt')
+const passport = require('passport');
+const bcrypt = require('bcrypt');
+//const LocalStrategy = require('passport-local').Strategy;
+
+const session = require('express-session');
+//const initializePassport = require('./passport.config')
 let users = []; 
 app.use(express.json());
+
+const initializePassport = require('./passport-config');
+initializePassport(passport, users)
+
+app.use(session({
+    secret: "AEK3412eEKMDOAMONEOENFONA#EMDF", 
+    resave: false, 
+    saveUninitialized: false
+}))
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.post("/api/user/register", async (req, res) => {
     //console.log(req.body);
@@ -32,7 +48,17 @@ app.post("/api/user/register", async (req, res) => {
 });
 
 app.post("/api/user/login", async (req, res) => {
-
+    try {
+        let loginStatus = await authenticateUser(req.body.username, req.body.password, done);
+        console.log(loginStatus);
+        if (loginStatus == true) {
+            res.status(200).send("Login succeeded!");
+        } else {
+            res.status(401).send("Login failed!");
+        }
+    } catch(err) {
+        res.send(err);
+    }
 })
 
 // Route for returning a list of registered users
