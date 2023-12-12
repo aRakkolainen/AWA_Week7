@@ -14,7 +14,8 @@ app.use(express.json());
 app.use(session({
     secret: "AEK3412eEKMDOAMONEOENFONA#EMDF", 
     resave: false, 
-    saveUninitialized: false
+    saveUninitialized: false, 
+    cookie: {}
 }))
 app.use(passport.initialize());
 app.use(passport.session());
@@ -27,7 +28,6 @@ function getUserID(id) {
     return users.find((user) => user.id == id);
 }
 const initializePassport = require('./passport-config');
-const { STATUS_CODES } = require('http');
 initializePassport(passport, getUser, getUserID);
 app.use(passport.initialize());
 app.use(passport.session());
@@ -65,6 +65,9 @@ app.post("/api/user/login", checkNotAuthentication, passport.authenticate("local
     if (req.session == false) {
         res.status(401).send("Login failed!"); 
     }
+    //req.session.cookie.domain = "connect.sid";
+    req.session.domain = "connect.sid";
+    //console.log(req.session.cookie)
     res.status(200).send("Login was successful!");
 })
             
