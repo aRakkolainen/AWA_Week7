@@ -11,8 +11,8 @@ const session = require('express-session');
 let users = []; 
 app.use(express.json());
 
-//const initializePassport = require('./passport-config');
-//initializePassport(passport, users)
+const initializePassport = require('./passport-config');
+initializePassport(passport, users)
 
 app.use(session({
     secret: "AEK3412eEKMDOAMONEOENFONA#EMDF", 
