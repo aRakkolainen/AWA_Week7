@@ -1,18 +1,15 @@
+//This is based on lecture materials from week 7 in course Advanced Web Applications
+
 const express = require('express');
 const app = express(); 
 const path = require('path');
 const port = 3000;
 const passport = require('passport');
 const bcrypt = require('bcrypt');
-const LocalStrategy = require('passport-local').Strategy;
-
 const session = require('express-session');
 //const initializePassport = require('./passport.config')
 let users = []; 
 app.use(express.json());
-
-//const initializePassport = require('./passport-config');
-//initializePassport(passport, users)
 
 app.use(session({
     secret: "AEK3412eEKMDOAMONEOENFONA#EMDF", 
@@ -22,29 +19,18 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-async function authenticateUser(username, password) {
-    
-    const user = users.find((user) => user.username === username);
-    if (user === null) {
-        console.log("User not found");
-        return false;
-    }
-
-    try {
-        if (await bcrypt.compare(password, user.password)) {
-            console.log("Login was successful for user " + user.username + "!");
-            return true
-        } else {
-            console.log("Incorrect password!");
-            return false;
-        }
-    } catch(e) {
-        return done(e);
-    }
-    
-} 
-
-passport.use(new LocalStrategy(authenticateUser))
+function getUser(username) {
+    let user = users.find((user) => user.username === username)
+    return user
+}
+function getUserID(id) {
+    return users.find((user) => user.id == id);
+}
+const initializePassport = require('./passport-config');
+const { STATUS_CODES } = require('http');
+initializePassport(passport, getUser, getUserID);
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.post("/api/user/register", checkNotAuthentication, async (req, res) => {
     console.log("Registering...");
@@ -63,16 +49,27 @@ app.post("/api/user/register", checkNotAuthentication, async (req, res) => {
                 "password": hashedPassword
             }
             users.push(user);
-            res.send(user);
+            res.send(user)
         }
         
         } catch(error) {
-            res.send(error)
+            res.redirect("/api/user/register")
         }
 });
+/*app.get("/", checkNotAuthentication, (req, res) => {
+    console.log(req.cookie);
+    res.status(200).send("Login succeeded!");
+})*/
 
-app.post("/api/user/login", async (req, res) => {
-    try {
+app.post("/api/user/login", checkNotAuthentication, passport.authenticate("local", {session: false}), function (req, res){
+    if (req.session == false) {
+        res.status(401).send("Login failed!"); 
+    }
+    res.status(200).send("Login was successful!");
+})
+            
+    
+    /*try {
         let loginStatus = await authenticateUser(req.body.username, req.body.password);
         if (loginStatus == true) {
             //console.log(connect.sid)
@@ -84,8 +81,7 @@ app.post("/api/user/login", async (req, res) => {
         }
     } catch(err) {
         res.send(err);
-    }
-})
+    }*/
 
 // Route for returning a list of registered users
 app.get("/api/user/list", (req, res) =>{
