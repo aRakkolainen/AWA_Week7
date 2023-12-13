@@ -9,6 +9,7 @@ const bcrypt = require('bcrypt');
 const session = require('express-session');
 //const initializePassport = require('./passport.config')
 let users = []; 
+let todos = [];
 app.use(express.json());
 
 app.use(session({
@@ -62,10 +63,10 @@ app.post("/api/user/register", async (req, res) => {
             }
         }
 });
-app.get("/", (req, res) => {
-    console.log("Registering succeeded")
-    res.send("Registering succeeded")
-})
+//app.get("/", (req, res) => {
+  //  console.log("Registering succeeded")
+   // res.send("Registering succeeded")
+//})
 app.get("/api/user/login", checkNotAuthentication, (req, res) => {
     console.log("This is login page")
     res.send("Login page")
@@ -82,10 +83,37 @@ app.post("/api/user/login", checkNotAuthentication, passport.authenticate("local
     //console.log(req.session.cookie)
     res.status(200).send("Login was successful!");
 })
-            
+      
+//Route for authenticated user to store todos
+app.post("/api/todos", checkAuthentication, (req, res) => {
+    console.log("Adding Todos..");
+    let id = req.body.id;
+    let todoTask = req.body.todo; 
+    // Checking if the specific user already has saved todos
+    if (todos.some((todo) => todo.id == id)) {
+        let foundUser = todos.find((todo) => todo.id == id);
+        foundUser.todos.push(todoTask);
+        //userTodos.push(todo);
+        res.status(200).send(foundUser);
+
+    } // Not any todos yet with this id, adding new object! 
+    else {
+        let todoObject = {
+            "id": id, 
+            "todos": [todoTask]
+        }
+        todos.push(todoObject);
+        res.status(200).send(todoObject);
+    }
+
+})
+
 // Route for returning a list of registered users
 app.get("/api/user/list", (req, res) =>{
     res.send(users)
+})
+app.get("/api/todos/list", checkAuthentication, (req, res)=> {
+    res.send(todos);
 })
 //Secret route that should be available only users that are logged in
 app.get("/api/secret", checkAuthentication, (req, res) => {
@@ -97,8 +125,8 @@ app.get("/api/secret", checkAuthentication, (req, res) => {
 // Checking if user is already logged in
 function checkAuthentication(req, res, next) {
     if (req.isAuthenticated()) {
-       console.log("Authorized user!");
-        return res.send("You're at secret page!");
+       //console.log("Authorized user!");
+        return next();
     } 
     return res.sendStatus(401);
 }
