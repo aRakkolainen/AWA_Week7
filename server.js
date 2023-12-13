@@ -94,21 +94,15 @@ app.post("/api/todos", checkAuthentication, (req, res) => {
     //console.log(users);
     // Checking if the specific user already has saved todos
     if (todoTask != null) {
-        if (todos.some((todo) => todo.id == id)) {
-            let foundUser = todos.find((todo) => todo.id == id);
-            foundUser.todos.push(todoTask);
-            //userTodos.push(todo);
-            res.send(foundUser);
-    
-        } // Not any todos yet with this id, adding new object! 
-        else {
-            let todoObject = {
-                "id": id, 
-                "todos": [todoTask]
-            }
-            todos.push(todoObject);
-            res.send(todoObject);
+        let index = todos.findIndex((todo) => todo.id == id);
+        if (index == -1) {
+            todos.push({"id": id, "todos": [todoTask]});
+            res.send({"id": id, "todos": [todoTask]});
+        } else {
+            todos[index].todos.push(todoTask);
+            res.send({"id": id, "todos": todos[index].todos})
         }
+    
     }
 
 })
