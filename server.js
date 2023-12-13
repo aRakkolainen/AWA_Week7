@@ -32,28 +32,34 @@ initializePassport(passport, getUser, getUserID);
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.post("/api/user/register", checkNotAuthentication, async (req, res) => {
+app.post("/api/user/register", async (req, res) => {
     console.log("Registering...");
-    try {
-        let username = req.body.username;
-        let password = req.body.password;
-        // Checking whether there exists user with specific username is based on this: https://stackoverflow.com/questions/40438851/use-javascript-to-check-if-json-object-contain-value
-        if (users.some(user => user.username === req.body.username)) {
-            res.status(400).send("User exists already!");
-        } else {
-            let hashedPassword = await bcrypt.hash(password, 10);
-            let id = Math.floor(Math.random()*5000)+1;
-            let user = {
-                "id": id,
-                "username": username,
-                "password": hashedPassword
+    //console.log(req.session.cookie.domain)
+    if (req.session.cookie.domain == "connect.sid") {
+        console.log("Already logged in!")
+        res.redirect("/")
+    } else {
+        try {
+            let username = req.body.username;
+            let password = req.body.password;
+            // Checking whether there exists user with specific username is based on this: https://stackoverflow.com/questions/40438851/use-javascript-to-check-if-json-object-contain-value
+            if (users.some(user => user.username === req.body.username)) {
+                res.status(400).send("User exists already!");
+            } else {
+                let hashedPassword = await bcrypt.hash(password, 10);
+                let id = Math.floor(Math.random()*5000)+1;
+                let user = {
+                    "id": id,
+                    "username": username,
+                    "password": hashedPassword
+                }
+                users.push(user);
+                res.send(user)
             }
-            users.push(user);
-            res.send(user)
-        }
         
-        } catch(error) {
-            res.redirect("/api/user/register")
+            } catch(error) {
+                res.redirect("/api/user/register")
+            }
         }
 });
 app.get("/", (req, res) => {
@@ -61,11 +67,13 @@ app.get("/", (req, res) => {
     res.send("Registering succeeded")
 })
 app.get("/api/user/login", checkNotAuthentication, (req, res) => {
-    console.log(req.cookie);
-    res.status(200).send("Login succeeded!");
+    console.log("This is login page")
+    res.send("Login page")
+  //  console.log(req.cookie);
+   // res.status(200).send("Login succeeded!");
 })
 
-app.post("/api/user/login", checkNotAuthentication, passport.authenticate("local", {session: false}), function (req, res){
+app.post("/api/user/login", checkNotAuthentication, passport.authenticate("local", {session: this}), function (req, res){
     if (req.session == false) {
         res.status(401).send("Login failed!"); 
     }
@@ -75,34 +83,21 @@ app.post("/api/user/login", checkNotAuthentication, passport.authenticate("local
     res.status(200).send("Login was successful!");
 })
             
-    
-    /*try {
-        let loginStatus = await authenticateUser(req.body.username, req.body.password);
-        if (loginStatus == true) {
-            //console.log(connect.sid)
-            let cookie = req.session.cookie;
-            cookie.name = "connect.sid";
-            res.status(200).cookie(cookie).send("Login succeeded!");
-        } else {
-            res.status(401).send("Login failed!");
-        }
-    } catch(err) {
-        res.send(err);
-    }*/
-
 // Route for returning a list of registered users
 app.get("/api/user/list", (req, res) =>{
     res.send(users)
 })
-
+//Secret route that should be available only users that are logged in
 app.get("/api/secret", checkAuthentication, (req, res) => {
-    console.log("This is secret page!");
+    console.log("Secret page!");
 })
+
 
 // Checking if user is already logged in
 function checkAuthentication(req, res, next) {
     if (req.isAuthenticated()) {
-        res.redict("/secret")
+       console.log("Authorized user!");
+        return res.send("You're at secret page!");
     } 
     return res.redirect("user/login")
 }
