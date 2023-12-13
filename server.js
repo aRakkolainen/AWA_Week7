@@ -93,7 +93,7 @@ app.post("/api/todos", checkAuthentication, (req, res) => {
     let todoTask = req.body.todos; 
     //console.log(users);
     // Checking if the specific user already has saved todos
-    if (todoTask != null) {
+    if (req.body.todos != "") {
         let index = todos.findIndex((todo) => todo.id == id);
         if (index == -1) {
             todos.push({"id": id, "todos": [todoTask]});
@@ -102,7 +102,8 @@ app.post("/api/todos", checkAuthentication, (req, res) => {
             todos[index].todos.push(todoTask);
             res.send({"id": id, "todos": todos[index].todos})
         }
-    
+    } else {
+        res.send("Cannot add empty todo!");
     }
 
 })
@@ -135,7 +136,7 @@ function checkAuthentication(req, res, next) {
        //console.log("Authorized user!");
         return next();
     } 
-    return res.sendStatus(401);
+    return res.sendStatus(401).send("Not authorized!");
 }
 // Checking if user is not logged in
 function checkNotAuthentication(req, res, next) {
