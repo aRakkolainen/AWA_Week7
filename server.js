@@ -98,7 +98,7 @@ app.post("/api/todos", checkAuthentication, (req, res) => {
             let foundUser = todos.find((todo) => todo.id == id);
             foundUser.todos.push(todoTask);
             //userTodos.push(todo);
-            res.status(200).send(foundUser);
+            res.send(foundUser);
     
         } // Not any todos yet with this id, adding new object! 
         else {
@@ -107,8 +107,7 @@ app.post("/api/todos", checkAuthentication, (req, res) => {
                 "todos": [todoTask]
             }
             todos.push(todoObject);
-            console.log(todoObject)
-            res.status(200).send(todoObject);
+            res.send(todoObject);
         }
     }
 
