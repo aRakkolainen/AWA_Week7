@@ -90,6 +90,7 @@ app.get("/api/user/list", (req, res) =>{
 //Secret route that should be available only users that are logged in
 app.get("/api/secret", checkAuthentication, (req, res) => {
     console.log("Secret page!");
+    res.status(200).send("Authorized")
 })
 
 
@@ -99,7 +100,7 @@ function checkAuthentication(req, res, next) {
        console.log("Authorized user!");
         return res.send("You're at secret page!");
     } 
-    return res.redirect("user/login")
+    return res.sendStatus(401);
 }
 // Checking if user is not logged in
 function checkNotAuthentication(req, res, next) {
