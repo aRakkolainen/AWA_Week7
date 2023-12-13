@@ -63,10 +63,9 @@ app.post("/api/user/register", checkNotAuthentication, async (req, res) => {
             }
         }
 });
-//app.get("/", (req, res) => {
-  //  console.log("Registering succeeded")
-   // res.send("Registering succeeded")
-//})
+app.get("/", (req, res) => {
+  res.send("Already logged in!");
+})
 app.get("/api/user/login", checkNotAuthentication, (req, res) => {
     console.log("This is login page")
     res.send("Login page")
