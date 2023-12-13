@@ -33,7 +33,7 @@ initializePassport(passport, getUser, getUserID);
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.post("/api/user/register", async (req, res) => {
+app.post("/api/user/register", checkNotAuthentication, async (req, res) => {
     console.log("Registering...");
     //console.log(req.session.cookie.domain)
     if (req.session.cookie.domain == "connect.sid") {
@@ -108,6 +108,14 @@ app.post("/api/todos", checkAuthentication, (req, res) => {
 
 })
 
+app.post("/api/user/logout", checkAuthentication, (req, res, next) => {
+    req.logOut((err) => {
+        if (err) {
+            return next(err);
+        } 
+        return res.redirect("/api/user/login");
+    })
+})
 // Route for returning a list of registered users
 app.get("/api/user/list", (req, res) =>{
     res.send(users)
