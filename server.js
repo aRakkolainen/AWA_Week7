@@ -86,23 +86,30 @@ app.post("/api/user/login", checkNotAuthentication, passport.authenticate("local
 //Route for authenticated user to store todos
 app.post("/api/todos", checkAuthentication, (req, res) => {
     console.log("Adding Todos..");
-    let id = req.body.id;
-    let todoTask = req.body.todo; 
+    // How to access currently logged in user: https://stackoverflow.com/questions/41468105/how-to-get-the-profile-of-current-user-in-express
+    //Getting the id of currently logged in user: 
+    let user = req.user; 
+    let id = user.id;
+    let todoTask = req.body.todos; 
+    //console.log(users);
     // Checking if the specific user already has saved todos
-    if (todos.some((todo) => todo.id == id)) {
-        let foundUser = todos.find((todo) => todo.id == id);
-        foundUser.todos.push(todoTask);
-        //userTodos.push(todo);
-        res.status(200).send(foundUser);
-
-    } // Not any todos yet with this id, adding new object! 
-    else {
-        let todoObject = {
-            "id": id, 
-            "todos": [todoTask]
+    if (todoTask != null) {
+        if (todos.some((todo) => todo.id == id)) {
+            let foundUser = todos.find((todo) => todo.id == id);
+            foundUser.todos.push(todoTask);
+            //userTodos.push(todo);
+            res.status(200).send(foundUser);
+    
+        } // Not any todos yet with this id, adding new object! 
+        else {
+            let todoObject = {
+                "id": id, 
+                "todos": [todoTask]
+            }
+            todos.push(todoObject);
+            console.log(todoObject)
+            res.status(200).send(todoObject);
         }
-        todos.push(todoObject);
-        res.status(200).send(todoObject);
     }
 
 })
